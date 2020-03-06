@@ -66,7 +66,6 @@ class MainActivity : AppCompatActivity() {
     private val reqCodeSpeechInput = 100
     private var maximumRetries = 1
     private var currentItemPosition = -1
-
     private var isNetworkChangeReceiverRegistered = false
     private var isWearBroadcastRevieverRegistered = false
     private var launchedFromWidget = false
@@ -116,7 +115,6 @@ class MainActivity : AppCompatActivity() {
                 sendUtterance.visibility = View.VISIBLE
             }
         }
-
         micButton.setOnClickListener { promptSpeechInput() }
         sendUtterance.setOnClickListener {
             val utterance = utteranceInput.text.toString()
@@ -239,7 +237,7 @@ class MainActivity : AppCompatActivity() {
     private fun addData(mycroftUtterance: Utterance) {
         utterances.add(mycroftUtterance)
         mycroftAdapter.notifyItemInserted(utterances.size - 1)
-        if (voxswitch.isChecked) {
+            if (voxswitch.isChecked && mycroftUtterance.from.toString() == "MYCROFT")  {
             ttsManager.addQueue(mycroftUtterance.utterance)
         }
         cardList.smoothScrollToPosition(mycroftAdapter.itemCount - 1)
@@ -359,6 +357,7 @@ class MainActivity : AppCompatActivity() {
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
                 RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+        intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 2000);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
         intent.putExtra(RecognizerIntent.EXTRA_PROMPT,
                 getString(R.string.speech_prompt))

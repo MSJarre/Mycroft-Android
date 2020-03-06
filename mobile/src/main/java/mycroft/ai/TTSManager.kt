@@ -63,7 +63,7 @@ class TTSManager {
 
     var onInitListener: TextToSpeech.OnInitListener = TextToSpeech.OnInitListener { status ->
         if (status == TextToSpeech.SUCCESS) {
-            val result = mTts.setLanguage(Locale.US)
+            val result = mTts.setLanguage(Locale.FRANCE)
             isLoaded = true
             Log.i(TAG, "TTS initialized")
 
