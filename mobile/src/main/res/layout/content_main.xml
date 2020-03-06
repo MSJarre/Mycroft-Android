@@ -74,7 +74,7 @@
             android:layout_centerHorizontal="true"
             android:layout_alignParentBottom="true"
             android:background="@android:color/transparent"
-            android:src="@drawable/ic_mycroft"
+            android:src="@drawable/ic_duke"
             android:contentDescription="@string/speech_prompt" />
 
         <EditText
