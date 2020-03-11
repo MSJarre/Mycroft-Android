@@ -40,15 +40,19 @@ import org.json.JSONObject
 internal class MessageParser(private val message: String,
                              private val callback: SafeCallback<Utterance>) : Runnable {
     private val logTag = "MessageParser"
+    private var response = false
 
     override fun run() {
-        Log.i(logTag, message)
+        Log.i("BAIL", message)
         // new format
         // {"data": {"utterance": "There are only two hard problems in Computer Science: cache invalidation, naming things and off-by-one-errors."}, "type": "speak", "context": null}
         try {
             val obj = JSONObject(message)
+            if (obj.getJSONObject("data").getString("expect_response") == "true") {
+                response = true
+            }
             if (obj.optString("type") == "speak") {
-                val ret = Utterance(obj.getJSONObject("data").getString("utterance"), UtteranceFrom.MYCROFT)
+                val ret = Utterance(obj.getJSONObject("data").getString("utterance"), UtteranceFrom.MYCROFT, response)
                 callback.call(ret)
             }
         } catch (e: JSONException) {

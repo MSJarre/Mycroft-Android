@@ -120,6 +120,13 @@ class TTSManager {
             logError("TTS Not Initialized")
     }
 
+    fun isSpeaking():Boolean{
+        if (mTts.isSpeaking){
+            return true
+        }
+        return false
+    }
+
     /**
      * Wrapper around [Log.e] that also notifies
      * the [.setTTSListener], if present.

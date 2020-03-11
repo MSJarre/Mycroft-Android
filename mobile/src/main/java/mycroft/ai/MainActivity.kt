@@ -36,6 +36,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 
+
 import com.crashlytics.android.Crashlytics
 
 import org.java_websocket.client.WebSocketClient
@@ -49,6 +50,7 @@ import java.util.Locale
 import io.fabric.sdk.android.Fabric
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
+
 import mycroft.ai.adapters.MycroftAdapter
 import mycroft.ai.receivers.NetworkChangeReceiver
 import mycroft.ai.shared.utilities.GuiUtilities
@@ -59,6 +61,7 @@ import mycroft.ai.Constants.MycroftMobileConstants.VERSION_NAME_PREFERENCE_KEY
 import mycroft.ai.shared.wear.Constants.MycroftSharedConstants.MYCROFT_WEAR_REQUEST
 import mycroft.ai.shared.wear.Constants.MycroftSharedConstants.MYCROFT_WEAR_REQUEST_KEY_NAME
 import mycroft.ai.shared.wear.Constants.MycroftSharedConstants.MYCROFT_WEAR_REQUEST_MESSAGE
+import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
     private val logTag = "Mycroft"
@@ -70,6 +73,7 @@ class MainActivity : AppCompatActivity() {
     private var isWearBroadcastRevieverRegistered = false
     private var launchedFromWidget = false
     private var autoPromptForSpeech = false
+    private var speakingTTS = true
 
     private lateinit var ttsManager: TTSManager
     private lateinit var mycroftAdapter: MycroftAdapter
@@ -237,10 +241,19 @@ class MainActivity : AppCompatActivity() {
     private fun addData(mycroftUtterance: Utterance) {
         utterances.add(mycroftUtterance)
         mycroftAdapter.notifyItemInserted(utterances.size - 1)
-            if (voxswitch.isChecked && mycroftUtterance.from.toString() == "MYCROFT")  {
+        cardList.smoothScrollToPosition(mycroftAdapter.itemCount - 1)
+        if (voxswitch.isChecked && mycroftUtterance.from.toString() == "MYCROFT")  {
             ttsManager.addQueue(mycroftUtterance.utterance)
         }
-        cardList.smoothScrollToPosition(mycroftAdapter.itemCount - 1)
+        if (kbMicSwitch.isChecked && mycroftUtterance.expect_response){
+            thread{
+                while (speakingTTS){
+                    speakingTTS = ttsManager.isSpeaking()
+                }
+                speakingTTS = true
+                promptSpeechInput()
+            }
+        }
     }
 
     private fun registerReceivers() {
@@ -338,7 +351,7 @@ class MainActivity : AppCompatActivity() {
                 // Actions to do after 1 seconds
                 try {
                     webSocketClient!!.send(json)
-                    addData(Utterance(msg, UtteranceFrom.USER))
+                    addData(Utterance(msg, UtteranceFrom.USER, false))
                 } catch (exception: WebsocketNotConnectedException) {
                     showToast(resources.getString(R.string.websocket_closed))
                 }
