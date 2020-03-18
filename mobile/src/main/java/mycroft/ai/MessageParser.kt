@@ -21,6 +21,7 @@
 package mycroft.ai
 
 import android.util.Log
+import mycroft.ai.utils.User
 
 import org.json.JSONException
 import org.json.JSONObject
@@ -48,12 +49,15 @@ internal class MessageParser(private val message: String,
         // {"data": {"utterance": "There are only two hard problems in Computer Science: cache invalidation, naming things and off-by-one-errors."}, "type": "speak", "context": null}
         try {
             val obj = JSONObject(message)
-            if (obj.getJSONObject("data").getString("expect_response") == "true") {
-                response = true
-            }
-            if (obj.optString("type") == "speak") {
-                val ret = Utterance(obj.getJSONObject("data").getString("utterance"), UtteranceFrom.MYCROFT, response)
-                callback.call(ret)
+            if (obj.getJSONObject("context").getString("userid") == User.UserName) {
+
+                if (obj.getJSONObject("data").getString("expect_response") == "true") {
+                    response = true
+                }
+                if (obj.optString("type") == "speak") {
+                    val ret = Utterance(obj.getJSONObject("data").getString("utterance"), UtteranceFrom.MYCROFT, response)
+                    callback.call(ret)
+                }
             }
         } catch (e: JSONException) {
             Log.e(logTag, "The response received did not conform to our expected JSON format.", e)
