@@ -23,21 +23,16 @@ package mycroft.ai
 import android.app.Activity
 import android.content.*
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
+import android.preference.PreferenceActivity
 import android.preference.PreferenceManager
+import android.provider.Telephony
 import android.speech.RecognizerIntent
 import android.support.v4.content.LocalBroadcastManager
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
-import android.text.SpannableString
-import android.text.SpannableStringBuilder
-import android.text.Spanned
-import android.text.style.BackgroundColorSpan
-import android.text.style.ForegroundColorSpan
-import android.text.style.RelativeSizeSpan
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -69,12 +64,13 @@ import mycroft.ai.shared.wear.Constants.MycroftSharedConstants.MYCROFT_WEAR_REQU
 import mycroft.ai.shared.wear.Constants.MycroftSharedConstants.MYCROFT_WEAR_REQUEST_KEY_NAME
 import mycroft.ai.shared.wear.Constants.MycroftSharedConstants.MYCROFT_WEAR_REQUEST_MESSAGE
 import mycroft.ai.utils.User
+import org.java_websocket.drafts.Draft
+import org.java_websocket.drafts.Draft_10
 import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
     private val logTag = "Mycroft"
     private val utterances = mutableListOf<Utterance>()
-    private val nlp = mutableListOf<Utterance>()
     private val reqCodeSpeechInput = 100
     private var maximumRetries = 1
     private var currentItemPosition = -1
@@ -90,6 +86,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var sharedPref: SharedPreferences
     private lateinit var networkChangeReceiver: NetworkChangeReceiver
     private lateinit var wearBroadcastReceiver: BroadcastReceiver
+    private lateinit var  draft: Draft
 
     var webSocketClient: WebSocketClient? = null
 
@@ -218,9 +215,9 @@ class MainActivity : AppCompatActivity() {
 
     fun connectWebSocket() {
         val uri = deriveURI()
-
+        val httpHeader = mapOf("Origin" to User.Token, "farm" to User.UserName)
         if (uri != null) {
-            webSocketClient = object : WebSocketClient(uri) {
+            webSocketClient = object : WebSocketClient(uri, Draft_10(),httpHeader,0) {
                 override fun onOpen(serverHandshake: ServerHandshake) {
                     Log.i("Websocket", "Opened")
                 }
@@ -332,7 +329,7 @@ class MainActivity : AppCompatActivity() {
     private fun deriveURI(): URI? {
         return if (wsip.isNotEmpty()) {
             try {
-                URI("ws://$wsip:8181/core")
+                URI("wss://$wsip:8181/core")
             } catch (e: URISyntaxException) {
                 Log.e(logTag, "Unable to build URI for websocket", e)
                 null

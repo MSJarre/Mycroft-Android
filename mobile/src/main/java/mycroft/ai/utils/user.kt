@@ -5,14 +5,16 @@ object User{
     init {
         println("Singleton class invoked.")
     }
-    var UserName = "UserPIxel"
+    var UserName = "demo.ekylibre.io"
+    var Token = "Potentielleorigine"
     fun printVarName(){
         println(UserName)
     }
 
 }
 
-fun main(args: Array<String>) {
+fun main(name: String, Token: String) {
     User.printVarName()
-    User.UserName = "New Name"
+    User.UserName = name
+    User.Token = Token
 }
