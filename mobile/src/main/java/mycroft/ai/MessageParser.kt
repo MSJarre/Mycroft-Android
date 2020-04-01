@@ -44,14 +44,12 @@ internal class MessageParser(private val message: String,
     private var response = false
 
     override fun run() {
-        Log.i("BAIL", message)
         // new format
         // {"data": {"utterance": "There are only two hard problems in Computer Science: cache invalidation, naming things and off-by-one-errors."}, "type": "speak", "context": null}
         try {
             val obj = JSONObject(message)
-            if (obj.getJSONObject("context").getString("userid") == User.UserName) {
-
-                if (obj.getJSONObject("data").getString("expect_response") == "true") {
+            if (obj.getJSONObject("context").has("userid") && obj.getJSONObject("context").getString("userid") == User.UserName) {
+                if (obj.getJSONObject("data").has("expect_response") &&  obj.getJSONObject("data").getString("expect_response") == "true") {
                     response = true
                 }
                 if (obj.optString("type") == "speak") {
